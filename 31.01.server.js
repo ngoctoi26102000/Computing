@@ -13,5 +13,5 @@ server = http.createServer(
 );
 
 server.listen( port, hostname, 
-    () => { console.log(' Server running: ',hostname, process.env.PORT || 8080 ); }
+    () => { console.log(' Server running: ',hostname, port ); }
 );
