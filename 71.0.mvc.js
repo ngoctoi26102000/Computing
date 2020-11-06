@@ -26,7 +26,7 @@ var atob = require('atob');
 /// ------------------ CONFIG
 var configHeader = require("./configs/config_Header");
 var configDB = require("./configs/config_DB");
-const PORT = process.env.PORT || 8080;
+const PORT = 8081;
 var urldb = configDB.localdb.urldb;
 
 
@@ -66,6 +66,10 @@ productControl.params = { configHeader: configHeader, configDB: configDB};
 
 var uploadControl = require('./controllers/upload');
 app.use('/upload', uploadControl);
+uploadControl.params = { configHeader: configHeader, configDB: configDB};
+
+var uploadControl = require('./controllers/payment');
+app.use('/payment', uploadControl);
 uploadControl.params = { configHeader: configHeader, configDB: configDB};
 // uploadControl.uploadStore = uploadStore;
 
@@ -172,6 +176,31 @@ function orderPage(req, res) {
         content: xcontent , itemlist: itemlist,  // Object.values(itemlist)
         configHeader: configHeader  , currpage: "Order"  });
 
+}
+///....................................................
+app.get('/payment', paymentPage);
+function paymentPage(req,res){
+    var xcontent=" ";
+    console.log('\t ..... get PAYMENT INF !');
+    var strtext = req.cookies.cart_itemlist;
+    xcontent += "<BR><p> " + strtext + "</p>";
+    //
+    strtext = atob(strtext);
+    xcontent += "<BR>atob <p> " + strtext + "</p>";
+    //
+    strtext = escape(strtext);
+    xcontent += "<BR>escape <p> " + strtext + "</p>";
+    //
+    strtext = decodeURIComponent(strtext);
+    xcontent += "<BR>decodeURIComponent <p> " + strtext + "</p>";
+    ///
+    var itemlist  = JSON.parse(strtext);
+
+    console.log("\n\t ", xcontent);
+    
+    res.render("pages/payment", {title: "ATN-Shop ORDER page", 
+    content: xcontent , itemlist: itemlist,  // Object.values(itemlist)
+    configHeader: configHeader  , currpage: "Payment"  });
 }
 
 
@@ -307,6 +336,7 @@ function writeLog(dataw) {
         );
     writeStream.end();
 }
+///..................................................
 
 /// ..................................................
 app.get('/qr', qrPage);
