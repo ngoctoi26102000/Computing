@@ -26,7 +26,7 @@ var atob = require('atob');
 /// ------------------ CONFIG
 var configHeader = require("./configs/config_Header");
 var configDB = require("./configs/config_DB");
-const PORT = process.env.PORT || 8081;
+const PORT = 8081;
 var urldb = configDB.localdb.urldb;
 
 
@@ -69,6 +69,7 @@ app.use('/upload', uploadControl);
 uploadControl.params = { configHeader: configHeader, configDB: configDB};
 
 var uploadControl = require('./controllers/payment');
+const { report } = require('./controllers/admin');
 app.use('/payment', uploadControl);
 uploadControl.params = { configHeader: configHeader, configDB: configDB};
 // uploadControl.uploadStore = uploadStore;
@@ -198,7 +199,7 @@ function paymentPage(req,res){
 
     console.log("\n\t ", xcontent);
     
-    res.render("pages/payment", {title: "ATN-Shop ORDER page", 
+    res.render("pages/payment", {title: "ATN-Shop Payment page", 
     content: xcontent , itemlist: itemlist,  // Object.values(itemlist)
     configHeader: configHeader  , currpage: "Payment"  });
 }
@@ -248,6 +249,68 @@ function loginPage(req, res) {
     }
 }
 
+////..............................
+app.get('/report', reportPage);
+function reportPage(req, res){
+    var name1 = req.query.name;
+    var chucvu1 = req.query.chucvu;
+    var chinhanh1 = req.query.chinhanh;
+    var banchay1 = req.query.banchay;
+    var doanhthu1 = req.query.doanhthu;
+    var array = {
+        name:name1,
+        chucvu:chucvu1,
+        chinhanh:chinhanh1,
+        banchay:banchay1,
+        doanhthu:doanhthu1
+    };
+    var urldb = 'mongodb+srv://toi:PwW6pKJvIID4Y12b@cluster0.fx1w6.mongodb.net/shopbebe?retryWrites=true&w=majority';
+        MongoClient.connect(urldb,function(err, db) {
+            if (err) throw err;
+            var dbo = db.db("shopbebe"); //"newshop" "product"
+            dbo.collection("report").insertOne(array, function(err, xres) {
+                if (err) throw err;
+                console.log('\t Insert:', array);
+                ///////////
+                db.close();
+            });
+        });
+        /*
+    Video: https://www.youtube.com/watch?v=Va9UKGs1bwI
+    Don't forget to disable less secure app from Gmail: https://myaccount.google.com/lesssecureapps TODO:
+*/
+
+require('dotenv').config();
+
+const nodemailer = require('nodemailer');
+const log = console.log;
+
+// Step 1
+let transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'toi@gmail.com' , // TODO: your gmail account
+        pass: '123' // TODO: your gmail password
+    }
+});
+
+// Step 2
+let mailOptions = {
+    from: 'toi@gmail.com', // TODO: email sender
+    to: 'bienngoctoi@gmail.com', // TODO: email receiver
+    subject: 'Nơi tình yêu bắt đầu',
+    text: 'Report' + name1 + chucvu1 + chinhanh1 + banchay1 + doanhthu1,
+};
+
+// Step 3
+transporter.sendMail(mailOptions, (err, data) => {
+    if (err) {
+        return log('Error occurs' + err);
+    }
+    return log('Email sent!!!');
+});
+    res.render("pages/report", {title: "ATN-Shop LOGIN page",names:name1,chucvus:chucvu1, chinhanhs:chinhanh1,banchays: banchay1,doanhthus:doanhthu1, configHeader: configHeader , currpage: "Report"  });
+}
 /// ..................................................
 app.get('/logout', logoutPage);
 function logoutPage(req, res) {
